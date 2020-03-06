@@ -3,6 +3,9 @@
 #include "myGPIO.h"
 #include "myTimer.h"
 
+#define STATE_BUTTONPRESS 1
+#define STATE_BUTTONRELEASE 0
+
 int main(void)
 {
     // Count variables to control the LEDs.
@@ -10,7 +13,9 @@ int main(void)
     unsigned int count1 = 0;
 
     // TODO: Declare the variables that main uses to interact with your state machine.
-    unsigned int buttonhistory;
+    unsigned int buttonhistory=0;
+    unsigned int buttonReleased=1;
+    unsigned int i = 0;
 
     // Stops the Watchdog timer.
     initBoard();
@@ -47,12 +52,31 @@ int main(void)
 
         // TODO: If Timer1 has expired, update the button history from the pushbutton value.
         // YOU MUST WRITE timer1expired IN myTimer.c
-        if (timer1Expired()){
-            buttonhistory=checkStatus_BoosterpackS1();
 
+        if (timer1Expired()){
+            unsigned char curButton = (checkStatus_BoosterpackS1());
+            curButton = curButton >> 1;
+            if (curButton) {
+               if (buttonReleased) {
+                  buttonhistory = buttonhistory << 1;
+                  buttonhistory = buttonhistory | curButton;
+               }
+            }
+            else {
+               buttonReleased = 1;
+            }
         }
 
-
+        if (fsmBoosterpackButtonS1(buttonhistory)) {
+           buttonhistory = 0;
+           buttonReleased = 0;
+           if (count1 == 6) {
+              count1 = 0;
+           }
+           else {
+             count1++;
+           }
+        }
 
         // TODO: Call the button state machine function to check for a completed, debounced button press.
         // YOU MUST WRITE THIS FUNCTION BELOW.
@@ -60,17 +84,19 @@ int main(void)
 
 
         // TODO: If a completed, debounced button press has occurred, increment count1.
-        if (fsmBoosterpackButtonS1(buttonhistory)){
-            if (count1 < 6){
-                count1++;
+        /*
+        if(i == 8){
+            i = 0;
+            if (fsmBoosterpackButtonS1(buttonhistory)){
+                if (count1 < 6){
+                    count1++;
+                }
+                else {
+                    count1=0;
+                }
             }
-            else {
-                count1=0;
-            }
-
         }
-
-
+        */
     }
 }
 
@@ -173,12 +199,11 @@ void changeBoosterpackLED(unsigned int count)
 // The button state machine should return true or false to indicate a completed, debounced button press.
 bool fsmBoosterpackButtonS1(unsigned int buttonhistory)
 {
+   unsigned char stable = 0xFF;
+   unsigned char check = buttonhistory & stable;
 
-   bool pressed = checkStatus_BoosterpackS1();
-
-    if (pressed && !buttonhistory){
-        return true;
-
+    if ((buttonhistory & stable) == 0xFF) {
+       return true;
     }
     return false;
 

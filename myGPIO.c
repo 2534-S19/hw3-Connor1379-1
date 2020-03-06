@@ -92,6 +92,7 @@ unsigned char checkStatus_LaunchpadS2()
 unsigned char checkStatus_BoosterpackS1()
 {
     return ~P5IN & B1;
+
 }
 
 // TODO: Create a function to return the status of Boosterpack Pushbutton S2

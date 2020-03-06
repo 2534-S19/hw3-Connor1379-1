@@ -17,10 +17,10 @@ void initTimer(unsigned int timer, unsigned int preScaler, unsigned int count)
     Timer32_initModule(timer, preScaler,TIMER32_32BIT, TIMER32_PERIODIC_MODE);
 
     // For the specified timer, pass the count value.
-    Timer32_setCount(TIMER32_0_BASE, count);
+    Timer32_setCount(timer, count);
 
     // For the specified timer, configure the timer to repeat once it elapses.
-    Timer32_startTimer(TIMER32_0_BASE, true);
+    Timer32_startTimer(timer, true);
 
 
 }
